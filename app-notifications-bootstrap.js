@@ -11,7 +11,8 @@ async function updateNotificationSnapshot(){
   let todayList=openOrders.filter(x=>x.visit&&dayKeyLocal(x.visit)===today).map(x=>x.id);
   let overdueList=openOrders.filter(x=>x.visit&&dayKeyLocal(x.visit)<today).map(x=>x.id);
   let lowStockList=p.filter(x=>+x.qty<=+x.min).map(x=>x.id);
-  await notifSet("snapshot",{generatedAt:new Date().toISOString(),today:todayList,overdue:overdueList,lowStock:lowStockList});
+  let backupOverdue=typeof daysSinceLastBackup==="function"&&(daysSinceLastBackup()===null||daysSinceLastBackup()>=14);
+  await notifSet("snapshot",{generatedAt:new Date().toISOString(),today:todayList,overdue:overdueList,lowStock:lowStockList,backupOverdue});
 }
 async function checkNotificationsNow(){
   if(localStorage.getItem("wf_notif_enabled")!=="1")return;
@@ -25,6 +26,7 @@ async function checkNotificationsNow(){
   if(snap.today&&snap.today.length){reg.showNotification("📅 مواعيد اليوم",{body:`لديك ${snap.today.length} زيارة/زيارات اليوم.`,icon:"./icon-192-v11-47.png",tag:"wf-today",data:{url:"./requests.html?bucket=today"}});shown=true}
   if(snap.overdue&&snap.overdue.length){reg.showNotification("⚠️ أوامر متأخرة",{body:`يوجد ${snap.overdue.length} أمر متأخر يحتاج متابعة.`,icon:"./icon-192-v11-47.png",tag:"wf-overdue",data:{url:"./requests.html?bucket=overdue"}});shown=true}
   if(snap.lowStock&&snap.lowStock.length){reg.showNotification("📉 قطع منخفضة",{body:`يوجد ${snap.lowStock.length} صنف وصل إلى الحد الأدنى في المخزن.`,icon:"./icon-192-v11-47.png",tag:"wf-lowstock",data:{url:"./inventory.html?bucket=low"}});shown=true}
+  if(snap.backupOverdue){reg.showNotification("💾 نسخة احتياطية",{body:"فات وقت طويل من غير نسخة احتياطية من بيانات الورشة.",icon:"./icon-192-v11-47.png",tag:"wf-backup",data:{url:"./settings.html#backup-restore"}});shown=true}
   if(shown)await notifSet("lastNotifiedDate",today);
 }
 async function enableNotifications(){
@@ -90,7 +92,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(setupQuickForms,0));
     deferredPrompt=null;
   };
   if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=11.48.2', {updateViaCache: 'none'}).catch(err=>console.warn('PWA service worker:',err)));
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js?v=11.49', {updateViaCache: 'none'}).catch(err=>console.warn('PWA service worker:',err)));
   }
   window.addEventListener('online',()=>document.documentElement.dataset.network='online');
   window.addEventListener('offline',()=>document.documentElement.dataset.network='offline');

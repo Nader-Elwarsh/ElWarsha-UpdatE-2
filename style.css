@@ -505,6 +505,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 /* رأس الصفحة الرئيسية: تحية وتاريخ اليوم */
 .home-greeting{max-width:950px;margin:10px auto 0;padding:0 16px;color:var(--text-muted);font-size:13px}
 @media(max-width:650px){.home-greeting{padding:0 10px}}
+.home-backup-reminder-host{max-width:950px;margin:10px auto 0;padding:0 16px}
+@media(max-width:650px){.home-backup-reminder-host{padding:0 10px}}
+.backup-reminder-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 
 /* عناوين تجميع بطاقات الأقسام في الرئيسية */
 .nav-section-title{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:18px 2px 2px;font-size:13px;font-weight:bold;color:var(--text-muted)}

@@ -6,6 +6,29 @@ async function deleteAllOperationalData(){if(!confirm("سيتم حذف العم�
 // ملحوظة: الصور بقت مخزنة في IndexedDB (image-store.js) مش جوه سجلات
 // localStorage، فلازم الباك أب يجيبها بنفسه ويحطها في نفس ملف الـ JSON
 // عشان الملف يفضل نسخة واحدة كاملة زي ما كان قبل كده تمامًا.
+//
+// تذكير النسخة الاحتياطية (V11.49): بنسجّل تاريخ آخر نسخة ناجحة في
+// wf_last_backup_at (localStorage) — يستخدمها backup-reminder.js
+// (بانر في الرئيسية) وapp-notifications-bootstrap.js (تنبيه دوري)
+// وصفحة الإعدادات (سطر معلومة) عشان يعرفوا فات قد إيه من آخر نسخة.
+function daysSinceLastBackup(){
+  let last=localStorage.getItem("wf_last_backup_at");
+  if(!last)return null;
+  let d=new Date(last);if(Number.isNaN(d.getTime()))return null;
+  return Math.floor((Date.now()-d.getTime())/86400000);
+}
+function lastBackupInfoText(){
+  let days=daysSinceLastBackup();
+  if(days===null)return "⚠️ لسه معملتش أي نسخة احتياطية أبدًا.";
+  if(days===0)return "✅ آخر نسخة احتياطية: النهاردة.";
+  if(days===1)return "✅ آخر نسخة احتياطية: من يوم واحد.";
+  return `${days>=14?"⚠️":"✅"} آخر نسخة احتياطية: من ${days} يوم.`;
+}
+function renderBackupInfo(){
+  let el=document.getElementById("lastBackupInfo");if(!el)return;
+  el.textContent=lastBackupInfoText();
+}
+document.addEventListener("DOMContentLoaded",renderBackupInfo);
 async function backupAllData(){
   let data={};
   Object.values(K).forEach(k=>{data[k]=get(k,null)});
@@ -19,6 +42,9 @@ async function backupAllData(){
   a.href=url;a.download=`نسخة-احتياطية-الورشة-الفنية-${stamp}.json`;
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),2000);
+  localStorage.setItem("wf_last_backup_at",data._meta.exportedAt);
+  if(typeof renderBackupInfo==="function")renderBackupInfo();
+  if(typeof renderBackupReminder==="function")renderBackupReminder();
 }
 async function restoreBackupFile(input){
   let file=input?.files?.[0];
@@ -44,6 +70,9 @@ async function restoreBackupFile(input){
       if(window.ImageStore?.clearAll)await window.ImageStore.clearAll();
       if(data.images && window.ImageStore)await window.ImageStore.importAll(data.images);
       if(window.setSchemaVersion)window.setSchemaVersion(Math.min(backupSchema,window.CURRENT_SCHEMA_VERSION||backupSchema));
+      // الملف اللي اترجع منه أصلًا هو نسخة احتياطية، فتاريخ تصديره (لو موجود)
+      // بيبقى أدق تقدير لـ"آخر نسخة احتياطية معروفة" من نظافة العداد على طول.
+      if(data._meta?.exportedAt)localStorage.setItem("wf_last_backup_at",data._meta.exportedAt);
       alert("✅ تم استرجاع النسخة الاحتياطية بنجاح. هيتم فتح الرئيسية الآن.");
       location.href="index.html";
     }catch(e){
