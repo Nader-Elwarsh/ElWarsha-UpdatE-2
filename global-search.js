@@ -26,9 +26,10 @@
     task: "📋 المهام",
     treasury: "💵 الخزنة",
     wallet: "💳 الحسابات والمحافظ",
-    route: "🗺️ خط السير"
+    route: "🗺️ خط السير",
+    faultcode: "🧯 أكواد الأعطال"
   };
-  var CAT_ORDER = ["customer", "device", "request", "part", "task", "treasury", "wallet", "route"];
+  var CAT_ORDER = ["customer", "device", "request", "part", "task", "treasury", "wallet", "route", "faultcode"];
   var MAX_PER_GROUP = 25;
 
   function safeEsc(v) {
@@ -133,6 +134,19 @@
         title: w.reason || w.category || "حركة حساب",
         sub: [w.wallet, w.amount ? (+w.amount).toLocaleString("ar-EG") + " ج" : ""].filter(Boolean).join(" • "),
         href: w.wallet ? ("wallet.html?type=wallet&name=" + encodeURIComponent(w.wallet)) : "wallets.html"
+      });
+    });
+
+    // أكواد أعطال الأجهزة: قسم مرجعي مستقل (مش مربوط بعميل/جهاز/أمر
+    // شغل) — بندوّر بالكود والوصف والسبب والحل ونوع الجهاز والماركة.
+    (arr(K.fc) || []).forEach(function (f) {
+      var hay = norm([f.code, f.title, f.cause, f.fix, f.deviceType, f.brand].join(" "));
+      if (hay.indexOf(q) === -1) return;
+      results.push({
+        cat: "faultcode", icon: "🧯",
+        title: (f.code || "") + (f.title ? " — " + f.title : ""),
+        sub: [f.deviceType, f.brand].filter(Boolean).join(" • "),
+        href: "faultcode.html?id=" + encodeURIComponent(f.id)
       });
     });
 
