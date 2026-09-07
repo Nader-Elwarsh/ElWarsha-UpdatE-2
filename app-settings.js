@@ -72,9 +72,9 @@ function settingsPage(){
   brandSettings.innerHTML=s.brands.map((b,i)=>`<div class="setting-row drag-item" draggable="true" data-drag-kind="brands" data-drag-index="${i}"><span class="drag-handle" title="سحب للترتيب">☷</span><span class="setting-name"><b>${i+1}. ${esc(b)}</b></span><span class="compact-actions"><input class="order-number" type="number" min="1" max="${s.brands.length}" value="${i+1}" title="رقم الترتيب" onchange="setListPosition('brands',${i},this.value)"><button class="secondary mini-action" onclick="renameBrand('${esc(b)}')">✏️</button><button class="secondary mini-action" onclick="deleteBrand('${esc(b)}')">🗑️</button></span></div>`).join("");
   partCategorySettings.innerHTML=s.partCats.map((b,i)=>`<div class="setting-row drag-item" draggable="true" data-drag-kind="partCats" data-drag-index="${i}"><span class="drag-handle" title="سحب للترتيب">☷</span><span class="setting-name"><b>${i+1}. ${esc(b)}</b></span><span class="compact-actions"><input class="order-number" type="number" min="1" max="${s.partCats.length}" value="${i+1}" title="رقم الترتيب" onchange="setListPosition('partCats',${i},this.value)"><button class="secondary mini-action" onclick="renamePartCategory('${esc(b)}')">✏️</button><button class="secondary mini-action" onclick="deletePartCategory('${esc(b)}')">🗑️</button></span></div>`).join("");
   let host=document.getElementById("settingsDynamic");
-  if(host)host.innerHTML=`<section class="panel setting-list-panel"><div class="page-head"><h2>🛠️ دورة حالات أمر الشغل</h2></div><div class="hint">الحالات (جديد / جاري التنفيذ / مكتمل / ملغي) وحالات الورشة (غير مطلوب / تم السحب / تم التسليم) بقت دورة معتمدة وثابتة، ومش قابلة للتعديل من هنا. الأولوية اتشالت خالص من أوامر الشغل. راجع ملف WORK_ORDER_LIFECYCLE_APPROVED.md لتفاصيل الدورة والانتقالات المسموحة.</div></section>`+returnWindowSettingHtml()+orderTagsSettingHtml()+[["executionPlaces","أماكن التنفيذ","📍"],["paymentStatuses","حالات الدفع","💳"],["units","وحدات القياس","📏"],["addressTypes","أنواع العناوين","🏠"],["expenseCategories","تصنيفات مصاريف التشغيل (الفرعية)","🧯"]].map(x=>listEditorHtml(...x)).join("");
+  if(host)host.innerHTML=`<section class="panel setting-list-panel"><div class="page-head"><h2>🛠️ دورة حالات أمر الشغل</h2></div><div class="hint">الحالات (جديد / جاري التنفيذ / مكتمل / ملغي) وحالات الورشة (غير مطلوب / تم السحب / تم التسليم) بقت دورة معتمدة وثابتة، ومش قابلة للتعديل من هنا. الأولوية اتشالت خالص من أوامر الشغل. راجع ملف WORK_ORDER_LIFECYCLE_APPROVED.md لتفاصيل الدورة والانتقالات المسموحة.</div></section>`+returnWindowSettingHtml()+orderTagsSettingHtml()+[["executionPlaces","أماكن التنفيذ","📍"],["paymentStatuses","حالات الدفع","💳"],["units","وحدات القياس","📏"],["addressTypes","أنواع العناوين","🏠"],["expenseCategories","تصنيفات مصاريف التشغيل (الفرعية)","🧯"],["personalExpenseCategories","تصنيفات المصاريف الشخصية (الفرعية)","🙋"]].map(x=>listEditorHtml(...x)).join("");
   let walletHost=document.getElementById("walletSettingsDynamic");
-  if(walletHost)walletHost.innerHTML=defaultWalletSettingHtml()+[["wallets","الحسابات (محفظتي الشخصية، فودافون كاش، أورنج كاش، إنستاباي... أضف أي حساب تحب)","💳"],["walletCategories","تصنيفات حركة الحسابات (شخصي / تشغيل / تحصيل عميل...)","🏷️"]].map(x=>inlineListEditorHtml(...x)).join("");
+  if(walletHost)walletHost.innerHTML=defaultWalletSettingHtml()+[["wallets","الحسابات (محفظتي الشخصية، فودافون كاش، أورنج كاش، إنستاباي... أضف أي حساب تحب)","💳"],["walletCategories","تصنيفات حركة الحسابات (شخصي / تشغيل / تحصيل عميل...)","🏷️"]].map(x=>inlineListEditorHtml(...x)).join("")+walletCapsSettingHtml();
   let rtHost=document.getElementById("routeThemeSettings");
   if(rtHost)rtHost.innerHTML=routeThemeSettingsHtml();
   bindSortableSettings();
@@ -84,6 +84,30 @@ function defaultWalletSettingHtml(){
   return `<section class="panel setting-list-panel" id="default-wallet-panel"><div class="page-head"><h2>⭐ المحفظة الافتراضية</h2></div><div class="hint">أي دفعة/عربون أو تقفيل أمر شغل هيتحدد له تلقائي المحفظة دي، إلا لو غيّرتها بنفسك وقت العملية.</div><select id="defaultWalletSelect" onchange="setDefaultWallet(this.value)"><option value="">بدون تحديد افتراضي</option>${wallets.map(w=>`<option ${cur===w?"selected":""}>${esc(w)}</option>`).join("")}</select></section>`;
 }
 function setDefaultWallet(v){let s=settings();s.defaultWallet=v||"";put(K.s,s);settingsPage()}
+/* ---------------------------------------------------------------------
+   حد أقصى اختياري لأي حساب (مثال شائع: إنستاباي — بدل ما يتسجل رصيد
+   حسابك البنكي الشخصي بالكامل، تحط رقم تقريبي كحد أقصى، وأي رصيد فعلي
+   أعلى منه بيتقف عنده في العرض والإجمالي فقط، من غير ما يأثر على كشف
+   الحركات الفعلي نفسه).
+--------------------------------------------------------------------- */
+function walletCapsSettingHtml(){
+  let s=settings(),wallets=s.wallets||[],caps=s.walletCaps||{};
+  return `<section class="panel setting-list-panel" id="wallet-caps-panel">
+    <div class="page-head"><h2>🔒 حد أقصى اختياري لبعض الحسابات</h2></div>
+    <div class="hint">مفيد لحساب زي إنستاباي لو مش عايز تسجّله هنا بكامل رصيده الحقيقي (لأنه في الأصل جزء من حسابك البنكي الشخصي) — حط رقم تقريبي، وهو ده اللي هيدخل في رصيد المحفظة المعروض وفي إجمالي كل الحسابات، حتى لو الحركات الفعلية المسجلة جمعت لرقم أعلى. سيبه فاضي لأي محفظة تحب تحسب برصيدها الحقيقي كامل بدون حد.</div>
+    ${wallets.length?wallets.map(w=>`<div class="setting-row inline-edit-row">
+      <span class="setting-name">${esc(w)}</span>
+      <input type="number" min="0" step="0.01" class="inline-edit-input" placeholder="بدون حد" value="${caps[w]!==undefined&&caps[w]!==null&&caps[w]!==""?esc(String(caps[w])):""}" onchange="setWalletCap('${esc(w)}',this.value)">
+    </div>`).join(""):`<div class="hint">أضف حسابات أولًا من قسم "الحسابات" فوق.</div>`}
+  </section>`;
+}
+function setWalletCap(walletName,v){
+  let s=settings();s.walletCaps=s.walletCaps||{};
+  v=(v||"").trim();
+  if(!v)delete s.walletCaps[walletName];
+  else{let n=+v;if(!Number.isFinite(n)||n<0)return alert("اكتب رقم صحيح موجب، أو سيب الخانة فاضية لإلغاء الحد الأقصى.");s.walletCaps[walletName]=n;}
+  put(K.s,s);settingsPage();
+}
 function returnWindowSettingHtml(){
   let s=settings(),days=+s.returnWindowDays||7;
   return `<section class="panel setting-list-panel" id="return-window-panel"><div class="page-head"><h2>🔄 مهلة المرتجع بعد إغلاق الأمر</h2></div><div class="hint">أمر الشغل المكتمل وغير المغلق يفضل قابل للإرجاع/التعديل في أي وقت. أما بعد "تم الدفع بالكامل وإغلاق الأمر"، فبيبقى قابل للإرجاع فقط خلال عدد الأيام ده من تاريخ الإغلاق؛ بعدها مفيش مرتجع ولا تعديل.</div><div class="inline"><input id="returnWindowDaysInput" type="number" min="1" step="1" value="${days}" style="max-width:110px"><button class="secondary mini-action" onclick="setReturnWindowDays()">💾 حفظ المدة</button><span class="hint">حاليًا: ${days} يوم</span></div></section>`;
@@ -166,10 +190,15 @@ function addInlineListItem(key){
 function renameInlineListItem(key,i,v){
   v=(v||"").trim();let s=settings(),a=s[key]||[];if(i<0||i>=a.length)return;
   if(!v){settingsPage();return} // رجوع للاسم القديم لو مسحه فاضي بدل ما يحفظ قيمة فاضية
-  a[i]=v;s[key]=a;put(K.s,s);settingsPage();
+  let old=a[i];a[i]=v;s[key]=a;
+  if(key==="wallets"&&s.walletCaps&&old in s.walletCaps&&old!==v){s.walletCaps[v]=s.walletCaps[old];delete s.walletCaps[old]}
+  put(K.s,s);settingsPage();
 }
 function deleteInlineListItem(key,i){
-  let s=settings(),a=s[key]||[];if(i<0||i>=a.length)return;a.splice(i,1);s[key]=a;put(K.s,s);settingsPage();
+  let s=settings(),a=s[key]||[];if(i<0||i>=a.length)return;
+  let removed=a[i];a.splice(i,1);s[key]=a;
+  if(key==="wallets"&&s.walletCaps&&removed in s.walletCaps)delete s.walletCaps[removed];
+  put(K.s,s);settingsPage();
 }
 function moveInlineListItem(key,i,dir){
   let s=settings(),a=s[key]||[],j=i+dir;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];s[key]=a;put(K.s,s);settingsPage();

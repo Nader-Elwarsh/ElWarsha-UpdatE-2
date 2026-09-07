@@ -19,8 +19,20 @@
 --------------------------------------------------------------------- */
 function walletTxEntries(){return arr(K.wtx).filter(x=>!x.deleted)}
 function walletTxFor(walletName){return walletTxEntries().filter(x=>x.wallet===walletName)}
-function walletBalance(walletName){return walletTxFor(walletName).reduce((a,x)=>a+(x.type==="in"?(+x.amount||0):-(+x.amount||0)),0)}
-function walletsOverview(){return (settings().wallets||[]).map(w=>({name:w,balance:walletBalance(w)}))}
+function walletRawBalance(walletName){return walletTxFor(walletName).reduce((a,x)=>a+(x.type==="in"?(+x.amount||0):-(+x.amount||0)),0)}
+// حد أقصى اختياري لمحفظة معينة (زي إنستاباي) — لو موجود، الرصيد المعروض/المحسوب
+// في الإجمالي بيتوقف عنده حتى لو الحركات الفعلية جمعت لرقم أعلى. راجع
+// s.walletCaps في shared-data.js وقسم الحسابات في الإعدادات لتعديله.
+function walletCapOf(walletName){
+  let cap=(settings().walletCaps||{})[walletName];
+  cap=+cap;
+  return Number.isFinite(cap)&&cap>0?cap:null;
+}
+function walletBalance(walletName){
+  let raw=walletRawBalance(walletName),cap=walletCapOf(walletName);
+  return cap!==null&&raw>cap?cap:raw;
+}
+function walletsOverview(){return (settings().wallets||[]).map(w=>({name:w,balance:walletBalance(w),raw:walletRawBalance(w),cap:walletCapOf(w)}))}
 // إجمالي الرصيد الكلي عبر كل المحافظ مع بعض، للعرض السريع فوق الصفحة.
 function walletsTotalBalance(){return walletsOverview().reduce((a,w)=>a+w.balance,0)}
 // ملخص حسب تصنيف الحركة (شخصي/تشغيل/تحصيل عميل...): إجمالي وارد وصادر لكل تصنيف،
@@ -60,10 +72,10 @@ function addWalletManual(type,prefix="wt"){
   if(amount<=0)return alert("أدخل مبلغ صحيح.");
   if(!wallet)return alert("اختر المحفظة.");
   if(!reason)return alert("اكتب سبب الحركة.");
-  // نوع المصروف الفرعي (وقود، صيانة، إيجار...) بيتسجل بس لو التصنيف
-  // "مصروف تشغيل"، عشان يبقى نفس مبدأ التبويب في كشف مصاريف التشغيل أيًا
-  // كان الفورم اللي اتسجلت منه الحركة (صفحة الحسابات أو صفحة محفظة بعينها).
-  let subCategory=category==="مصروف تشغيل"?(subCategoryEl?.value||""):"";
+  // نوع المصروف الفرعي (وقود، صيانة، إيجار... أو مواصلات، أكل، متفرقات لو
+  // شخصي) بيتسجل لو التصنيف "مصروف تشغيل" أو "مصروف شخصي"، عشان تبويب
+  // إحصائيات الصرف ("أكتر حاجة بيتصرف فيها") يشمل النوعين مش تشغيل بس.
+  let subCategory=subCategoryKeyFor(category)?(subCategoryEl?.value||""):"";
   let entry={
     id:id(),refKey:null,manualOverride:true,deleted:false,type,amount,wallet,category,subCategory,
     date,time,reason,note:(noteEl?.value||"").trim(),source:"manual",createdAt:new Date().toISOString()
@@ -75,13 +87,31 @@ function walletManualFromPage(type){
   addWalletManual(type,"wt");
   renderWallets();
 }
-// إظهار/إخفاء خانة "نوع مصروف التشغيل" الفرعية بس لما التصنيف المختار
-// يكون "مصروف تشغيل" — بتتنادى من onchange خانة التصنيف في أي فورم
-// (صفحة الحسابات الرئيسية "wt" أو صفحة محفظة بعينها "wd").
+// أي تصنيف حركة له قايمة "نوع فرعي" مرتبطة به (لأغراض إحصائيات الصرف)،
+// وأي قايمة قابلة للتعديل بالكامل من ⚙️ الإعدادات ← الحسابات.
+function subCategoryKeyFor(category){
+  if(category==="مصروف تشغيل")return "expenseCategories";
+  if(category==="مصروف شخصي")return "personalExpenseCategories";
+  return null;
+}
+function subCategoryLabelFor(category){
+  return category==="مصروف تشغيل"?"نوع مصروف التشغيل":"نوع المصروف الشخصي";
+}
+// إظهار/إخفاء خانة "النوع الفرعي" وتحديث قايمتها حسب التصنيف المختار —
+// بتتنادى من onchange خانة التصنيف في أي فورم (صفحة الحسابات الرئيسية
+// "wt" أو صفحة محفظة بعينها "wd").
 function toggleExpenseSubCategory(prefix){
-  let catEl=document.getElementById(prefix+"Category"),wrap=document.getElementById(prefix+"SubCatWrap");
+  let catEl=document.getElementById(prefix+"Category"),wrap=document.getElementById(prefix+"SubCatWrap"),
+      sel=document.getElementById(prefix+"SubCategory"),labelEl=wrap?.querySelector("span")||wrap?.firstChild;
   if(!catEl||!wrap)return;
-  wrap.classList.toggle("hidden",catEl.value!=="مصروف تشغيل");
+  let key=subCategoryKeyFor(catEl.value);
+  wrap.classList.toggle("hidden",!key);
+  if(key&&sel){
+    let list=settings()[key]||[];
+    sel.innerHTML=list.map(c=>`<option>${esc(c)}</option>`).join("");
+  }
+  let labelNode=wrap.querySelector(".subcat-label");
+  if(labelNode)labelNode.textContent=subCategoryLabelFor(catEl.value);
 }
 function editWalletTx(txId){
   let a=arr(K.wtx),e=a.find(x=>x.id===txId);if(!e)return;
@@ -233,6 +263,7 @@ function walletDetailEntries(type,name){
   return type==="category"?walletTxEntries().filter(x=>(x.category||"أخرى")===name):walletTxFor(name);
 }
 function walletDetailBalance(type,name){
+  if(type==="wallet")return walletBalance(name); // بيحترم الحد الأقصى لو متحدد للمحفظة دي
   return walletDetailEntries(type,name).reduce((a,x)=>a+(x.type==="in"?(+x.amount||0):-(+x.amount||0)),0);
 }
 function walletManualFromDetail(type,walletName){
@@ -244,7 +275,7 @@ function walletManualFromDetail(type,walletName){
       date=dateEl?.value||localDateKey(new Date()),time=timeEl?.value||new Date().toTimeString().slice(0,5);
   if(amount<=0)return alert("أدخل مبلغ صحيح.");
   if(!reason)return alert("اكتب سبب الحركة.");
-  let subCategory=category==="مصروف تشغيل"?(subCategoryEl?.value||""):"";
+  let subCategory=subCategoryKeyFor(category)?(subCategoryEl?.value||""):"";
   let entry={id:id(),refKey:null,manualOverride:true,deleted:false,type,amount,wallet:walletName,category,subCategory,
     date,time,reason,note:(noteEl?.value||"").trim(),source:"manual",createdAt:new Date().toISOString()};
   put(K.wtx,arr(K.wtx).concat(entry));
@@ -262,6 +293,7 @@ function renderWalletDetail(){
     .filter(x=>!filterCategory||x.category===filterCategory)
     .sort((a,b)=>new Date((b.date||"")+"T"+(b.time||"00:00"))-new Date((a.date||"")+"T"+(a.time||"00:00"))||new Date(b.createdAt)-new Date(a.createdAt));
   let balance=walletDetailBalance(type,name);
+  let rawBalance=isWallet?walletRawBalance(name):balance,cap=isWallet?walletCapOf(name):null;
   let icon=isWallet?"💳":(name==="مصروف شخصي"?"🙋":name==="مصروف تشغيل"?"🔧":"🏷️");
   el.classList.add("ps-context-target");el.setAttribute("data-ps-title",`حساب ${name}`);
   el.innerHTML=`
@@ -269,12 +301,13 @@ function renderWalletDetail(){
     <div class="treasury-balance ${balance<0?"negative":""}">
       <span>${isWallet?"رصيد المحفظة الحالي":"إجمالي حركات هذا التصنيف عبر كل المحافظ"}</span><b>${balance.toFixed(2)} ج</b>
     </div>
+    ${cap!==null?`<div class="hint">🔒 هذا الحساب له حد أقصى مضبوط من ⚙️ الإعدادات: ${cap.toFixed(2)} ج${rawBalance>cap?` (الرصيد الفعلي من الحركات المسجّلة هنا ${rawBalance.toFixed(2)} ج، لكن المعروض والمحسوب في الإجمالي متوقف عند الحد الأقصى).`:"."}</div>`:""}
     ${isWallet?`
     <div class="treasury-actions">
       <div class="form-grid">
         <label>المبلغ<input id="wdAmount" type="number" step="0.01" min="0" placeholder="0.00"></label>
         <label>التصنيف<select id="wdCategory" onchange="toggleExpenseSubCategory('wd')">${categories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
-        <label id="wdSubCatWrap" class="${categories[0]==="مصروف تشغيل"?"":"hidden"}">نوع مصروف التشغيل<select id="wdSubCategory">${(settings().expenseCategories||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
+        <label id="wdSubCatWrap" class="${subCategoryKeyFor(categories[0])?"":"hidden"}"><span class="subcat-label">${subCategoryLabelFor(categories[0])}</span><select id="wdSubCategory">${(settings()[subCategoryKeyFor(categories[0])||"expenseCategories"]||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
         <label>التاريخ<input id="wdDate" type="date" value="${today}"></label>
         <label>الوقت<input id="wdTime" type="time" value="${new Date().toTimeString().slice(0,5)}"></label>
         <label class="wide">السبب<input id="wdReason" placeholder="مثال: سحب شخصي، بنزين..."></label>
@@ -307,7 +340,7 @@ function renderWalletDetail(){
 --------------------------------------------------------------------- */
 function renderWallets(){
   let el=document.getElementById("walletsPage");if(!el)return;
-  let wallets=settings().wallets||[],categories=settings().walletCategories||[],expenseCategories=settings().expenseCategories||[];
+  let wallets=settings().wallets||[],categories=settings().walletCategories||[];
   let overview=walletsOverview(),catTotals=walletCategoryTotals(),pvw=personalVsWorkshopTotals();
   let today=localDateKey(new Date());
   el.innerHTML=`
@@ -319,10 +352,11 @@ function renderWallets(){
     <div class="wallet-icon-grid">
       <a class="wallet-icon-card" href="wallet.html?type=category&name=${encodeURIComponent("مصروف شخصي")}"><i>🙋</i><b>حساب مصاريفي الشخصية</b><span>${pvw.personal.toFixed(2)} ج</span></a>
       <a class="wallet-icon-card" href="wallet.html?type=category&name=${encodeURIComponent("مصروف تشغيل")}"><i>🔧</i><b>حساب مصاريف الورشة (تشغيل)</b><span>${pvw.workshop.toFixed(2)} ج</span></a>
-      ${overview.map(w=>`<a class="wallet-icon-card" href="wallet.html?type=wallet&name=${encodeURIComponent(w.name)}"><i>💳</i><b>${esc(w.name)}</b><span>${w.balance.toFixed(2)} ج</span></a>`).join("")}
+      ${overview.map(w=>`<a class="wallet-icon-card" href="wallet.html?type=wallet&name=${encodeURIComponent(w.name)}"><i>💳</i><b>${esc(w.name)}${w.cap!==null?" 🔒":""}</b><span>${w.balance.toFixed(2)} ج${w.cap!==null&&w.raw>w.cap?` <small>(الفعلي ${w.raw.toFixed(2)})</small>`:""}</span></a>`).join("")}
     </div>
-    <div class="hint" style="margin-top:6px">ملحوظة: "مصاريفي الشخصية" و"مصاريف الورشة" مش رصيد فلوس منفصل، هما تجميع للحركات اللي جوه المحافظ فوق أصلاً — عشان كده مش بيتحسبوا في الإجمالي، ولو جمعتهم هيبقى فيه تكرار.</div>
+    <div class="hint" style="margin-top:6px">ملحوظة: "مصاريفي الشخصية" و"مصاريف الورشة" مش رصيد فلوس منفصل، هما تجميع للحركات اللي جوه المحافظ فوق أصلاً — عشان كده مش بيتحسبوا في الإجمالي، ولو جمعتهم هيبقى فيه تكرار. 🔒 بجانب اسم المحفظة معناه إن لها حد أقصى مضبوط من ⚙️ الإعدادات (زي إنستاباي عادةً) — راجع صفحتها لتفاصيل أكتر.</div>
     ${overview.length?"":`<div class="hint">لا توجد حسابات بعد. أضفها من ⚙️ الإعدادات ← الحسابات.</div>`}
+    ${renderSpendingStatsHtml()}
     ${walletTransferWidgetHtml()}
     <details class="expense-panel">
       <summary>📊 ملخص كل تصنيف حركة على حدة (شخصي / تشغيل / تحصيل عميل...)</summary>
@@ -335,7 +369,7 @@ function renderWallets(){
         <label>المبلغ<input id="wtAmount" type="number" step="0.01" min="0" placeholder="0.00"></label>
         <label>المحفظة<select id="wtWallet">${wallets.map(w=>`<option>${esc(w)}</option>`).join("")}</select></label>
         <label>التصنيف<select id="wtCategory" onchange="toggleExpenseSubCategory('wt')">${categories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
-        <label id="wtSubCatWrap" class="${categories[0]==="مصروف تشغيل"?"":"hidden"}">نوع مصروف التشغيل<select id="wtSubCategory">${expenseCategories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
+        <label id="wtSubCatWrap" class="${subCategoryKeyFor(categories[0])?"":"hidden"}"><span class="subcat-label">${subCategoryLabelFor(categories[0])}</span><select id="wtSubCategory">${(settings()[subCategoryKeyFor(categories[0])||"expenseCategories"]||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
         <label>التاريخ<input id="wtDate" type="date" value="${today}"></label>
         <label>الوقت<input id="wtTime" type="time" value="${new Date().toTimeString().slice(0,5)}"></label>
         <label class="wide">السبب<input id="wtReason" placeholder="مثال: عربون، سحب شخصي، بنزين..."></label>
