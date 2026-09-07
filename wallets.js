@@ -306,8 +306,8 @@ function renderWalletDetail(){
     <div class="treasury-actions">
       <div class="form-grid">
         <label>المبلغ<input id="wdAmount" type="number" step="0.01" min="0" placeholder="0.00"></label>
-        <label>التصنيف<select id="wdCategory" onchange="toggleExpenseSubCategory('wd')">${categories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
-        <label id="wdSubCatWrap" class="${subCategoryKeyFor(categories[0])?"":"hidden"}"><span class="subcat-label">${subCategoryLabelFor(categories[0])}</span><select id="wdSubCategory">${(settings()[subCategoryKeyFor(categories[0])||"expenseCategories"]||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
+        <label>التصنيف <a class="mini-action" href="settings.html#wallet-settings-panel" title="تعديل التصنيف/النوع من الإعدادات">⚙️</a><select id="wdCategory" onchange="toggleExpenseSubCategory('wd')">${categories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
+        <label id="wdSubCatWrap" class="${subCategoryKeyFor(categories[0])?"":"hidden"}"><span class="subcat-label">${subCategoryLabelFor(categories[0])}</span><a class="mini-action" href="settings.html#wallet-settings-panel" title="تعديل التصنيف/النوع من الإعدادات">⚙️</a><select id="wdSubCategory">${(settings()[subCategoryKeyFor(categories[0])||"expenseCategories"]||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
         <label>التاريخ<input id="wdDate" type="date" value="${today}"></label>
         <label>الوقت<input id="wdTime" type="time" value="${new Date().toTimeString().slice(0,5)}"></label>
         <label class="wide">السبب<input id="wdReason" placeholder="مثال: سحب شخصي، بنزين..."></label>
@@ -368,8 +368,8 @@ function renderWallets(){
       <div class="form-grid">
         <label>المبلغ<input id="wtAmount" type="number" step="0.01" min="0" placeholder="0.00"></label>
         <label>المحفظة<select id="wtWallet">${wallets.map(w=>`<option>${esc(w)}</option>`).join("")}</select></label>
-        <label>التصنيف<select id="wtCategory" onchange="toggleExpenseSubCategory('wt')">${categories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
-        <label id="wtSubCatWrap" class="${subCategoryKeyFor(categories[0])?"":"hidden"}"><span class="subcat-label">${subCategoryLabelFor(categories[0])}</span><select id="wtSubCategory">${(settings()[subCategoryKeyFor(categories[0])||"expenseCategories"]||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
+        <label>التصنيف <a class="mini-action" href="settings.html#wallet-settings-panel" title="تعديل التصنيف/النوع من الإعدادات">⚙️</a><select id="wtCategory" onchange="toggleExpenseSubCategory('wt')">${categories.map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
+        <label id="wtSubCatWrap" class="${subCategoryKeyFor(categories[0])?"":"hidden"}"><span class="subcat-label">${subCategoryLabelFor(categories[0])}</span><a class="mini-action" href="settings.html#wallet-settings-panel" title="تعديل التصنيف/النوع من الإعدادات">⚙️</a><select id="wtSubCategory">${(settings()[subCategoryKeyFor(categories[0])||"expenseCategories"]||[]).map(c=>`<option>${esc(c)}</option>`).join("")}</select></label>
         <label>التاريخ<input id="wtDate" type="date" value="${today}"></label>
         <label>الوقت<input id="wtTime" type="time" value="${new Date().toTimeString().slice(0,5)}"></label>
         <label class="wide">السبب<input id="wtReason" placeholder="مثال: عربون، سحب شخصي، بنزين..."></label>
