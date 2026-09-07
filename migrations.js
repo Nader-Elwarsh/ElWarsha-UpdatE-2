@@ -121,11 +121,56 @@
     put(K.wtx, existing.concat(migrated));
   }
 
+  // ترحيل 5 → 6: إصلاح خطأ قديم في شاشة الإعدادات كان بيسجّل أي عنصر
+  // مُضاف لقوائم (الحسابات، التصنيف، نوع المصروف تشغيل/شخصي، أماكن
+  // التنفيذ، حالات الدفع، وحدات القياس، أنواع العناوين) تحت اسم خاطئ
+  // (نص العنوان العربي بدل مفتاح الإعداد الحقيقي بالإنجليزي)، فكانت
+  // العناصر المُضافة من الإعدادات بتختفي ومتظهرش في باقي الشاشات. أي
+  // عنصر اتسجل بالغلط قبل كده بينتقل هنا لمكانه الصحيح (بدون تكرار لو
+  // موجود بالفعل)، ومفيش أي بيانات بتتمسح.
+  function migrate5to6() {
+    let K = window.K;
+    let s = get(K.s, null);
+    if (!s) return;
+    const RECOVER = [
+      ["executionPlaces", ["أماكن التنفيذ"]],
+      ["paymentStatuses", ["حالات الدفع"]],
+      ["units", ["وحدات القياس"]],
+      ["addressTypes", ["أنواع العناوين"]],
+      ["wallets", ["الحسابات (محفظتي الشخصية، فودافون كاش، أورنج كاش، إنستاباي... أضف أي حساب تحب)"]],
+      ["walletCategories", [
+        "تصنيفات حركة الحسابات (شخصي / تشغيل / تحصيل عميل...)",
+        "التصنيف (شخصي / تشغيل / تحصيل عميل / سلفة تحويل / أخرى...)"
+      ]],
+      ["expenseCategories", [
+        "تصنيفات مصاريف التشغيل (الفرعية)",
+        "نوع المصروف — لما التصنيف \"مصروف تشغيل\" (وقود، صيانة عدة...)"
+      ]],
+      ["personalExpenseCategories", [
+        "تصنيفات المصاريف الشخصية (الفرعية)",
+        "نوع المصروف — لما التصنيف \"مصروف شخصي\" (مواصلات، أكل وشرب...)"
+      ]]
+    ];
+    let changed = false;
+    RECOVER.forEach(([realKey, badTitles]) => {
+      s[realKey] = Array.isArray(s[realKey]) ? s[realKey] : [];
+      badTitles.forEach(bad => {
+        if (Array.isArray(s[bad]) && s[bad].length) {
+          s[bad].forEach(v => { if (v && !s[realKey].includes(v)) s[realKey].push(v); });
+          changed = true;
+        }
+        if (bad in s) { delete s[bad]; changed = true; }
+      });
+    });
+    if (changed) put(K.s, s);
+  }
+
   const MIGRATIONS = [
     { from: 1, to: 2, run: migrate1to2 },
     { from: 2, to: 3, run: migrate2to3 },
     { from: 3, to: 4, run: migrate3to4 },
-    { from: 4, to: 5, run: migrate4to5 }
+    { from: 4, to: 5, run: migrate4to5 },
+    { from: 5, to: 6, run: migrate5to6 }
   ];
 
   async function runMigrations() {

@@ -83,7 +83,7 @@
      يتضاف (نعتبرها إصدار 1 ضمنيًا).
      --------------------------------------------------------------------- */
   const SCHEMA_KEY = "wf_schema_version";
-  const CURRENT_SCHEMA_VERSION = 5;
+  const CURRENT_SCHEMA_VERSION = 6;
   function getSchemaVersion() {
     let v = parseInt(localStorage.getItem(SCHEMA_KEY), 10);
     return Number.isFinite(v) && v > 0 ? v : 1;
