@@ -133,10 +133,10 @@ button,input,select,textarea{font-size:inherit}
 
 /* V11.54: ترميز لوني حسب عمر أمر الشغل (شريط علوي على الكارت + شارة صغيرة) — 3 ألوان بس */
 .record-card{border-top:4px solid transparent}
-.simple-record.age-b0,.simple-record.age-b1,.simple-record.age-b2{border-top-width:4px}
-.record-card.age-b0,.simple-record.age-b0{border-top-color:#3ba35c}
-.record-card.age-b1,.simple-record.age-b1{border-top-color:#e0b029}
-.record-card.age-b2,.simple-record.age-b2{border-top-color:#c0392b}
+.simple-record.age-b0,.simple-record.age-b1,.simple-record.age-b2,.route-order-card.age-b0,.route-order-card.age-b1,.route-order-card.age-b2,.route-completed-row.age-b0,.route-completed-row.age-b1,.route-completed-row.age-b2{border-top-width:4px;border-top-style:solid}
+.record-card.age-b0,.simple-record.age-b0,.route-order-card.age-b0,.route-completed-row.age-b0{border-top-color:#3ba35c}
+.record-card.age-b1,.simple-record.age-b1,.route-order-card.age-b1,.route-completed-row.age-b1{border-top-color:#e0b029}
+.record-card.age-b2,.simple-record.age-b2,.route-order-card.age-b2,.route-completed-row.age-b2{border-top-color:#c0392b}
 .age-badge{font-weight:bold;padding:2px 8px;border-radius:20px;display:inline-block}
 .age-badge.age-b0{background:#3ba35c26;color:#1e6b3a}
 .age-badge.age-b1{background:#e0b02926;color:#8a6116}

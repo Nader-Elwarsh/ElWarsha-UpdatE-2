@@ -153,12 +153,14 @@
         const deviceOrders = requestRows().filter(function (r) { return r.deviceId === d.id; });
         const count = deviceOrders.length;
         const isRecurring = count >= 2;
-        return `<div class="item record-card">
+        const activeDeviceOrders = deviceOrders.filter(function (r) { return r.status !== "مكتمل" && r.status !== "ملغي"; });
+        const deviceAge = typeof worstRequestAgeInfo === "function" ? worstRequestAgeInfo(activeDeviceOrders) : null;
+        return `<div class="item record-card${deviceAge ? " " + deviceAge.cls : ""}">
           <div class="card-side-actions">
             <a class="primary small-btn" href="device.html?id=${d.id}">فتح الجهاز 360°</a>
           </div>
           <div class="record-main">
-            <div><a href="device.html?id=${d.id}"><b>${esc(d.type)} — ${esc(d.brand)}</b></a>${isRecurring ? ' <span class="badge simple-line-warn" style="display:inline-block">🔁 يتكرر عطله</span>' : ""}</div>
+            <div><a href="device.html?id=${d.id}"><b>${esc(d.type)} — ${esc(d.brand)}</b></a>${isRecurring ? ' <span class="badge simple-line-warn" style="display:inline-block">🔁 يتكرر عطله</span>' : ""}${deviceAge ? ` <span class="badge age-badge ${deviceAge.cls}" title="⏱️ أقدم أمر مفتوح: ${esc(deviceAge.range)}">${deviceAge.dot} ${esc(deviceAge.label)}</span>` : ""}</div>
             <div>${esc(d.category || "—")} • ${esc(d.model || "بدون موديل")}</div>
             <div class="badge">🛠️ ${count} أوامر شغل</div>
           </div>
@@ -167,14 +169,15 @@
 
       <h2>🛠️ أوامر الشغل</h2>
       ${rs.length ? rs.map(function (r) {
-        return `<div class="item record-card">
+        const rAge = typeof requestAgeInfo === "function" ? requestAgeInfo(r) : null;
+        return `<div class="item record-card${rAge ? " " + rAge.cls : ""}">
           <div class="card-side-actions">
             <a class="primary small-btn" href="request.html?id=${r.id}">فتح 360°</a>
           </div>
           <div class="record-main">
             <div>
               <a href="request.html?id=${r.id}"><b>${esc(r.no || "أمر شغل")}</b></a>
-              <span class="badge">${esc(r.status || "—")}${r.closed ? " 🔒" : ""}</span>
+              <span class="badge">${esc(r.status || "—")}${r.closed ? " 🔒" : ""}</span>${rAge ? ` <span class="badge age-badge ${rAge.cls}" title="⏱️ عمر الأمر: ${esc(rAge.range)}">${rAge.dot} ${esc(rAge.label)}</span>` : ""}
             </div>
             <div>🔧 ${esc(typeof deviceName === "function" ? deviceName(r.deviceId) : "—")}</div>
             <div>💰 الإجمالي ${(+r.total || 0).toFixed(2)} ج • 💵 العربون ${(+r.deposit || 0).toFixed(2)} ج</div>

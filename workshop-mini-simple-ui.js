@@ -344,14 +344,15 @@
       ${filtered.length ? filtered.map(c => {
         const ds = deviceRows().filter(d => d.customerId === c.id).length;
         const rs = requestRows().filter(r => r.customerId === c.id).length;
-        const ao = activeOrdersForCustomer(c.id).length;
+        const ao = activeOrdersForCustomer(c.id);
         const hw = hasWorkshopDeviceForCustomer(c.id);
         const lastDate = customerLastContactDate(c.id);
         const remain = customerRemainingTotal(c.id);
-        return `<div class="simple-record"><div class="simple-record-icon">👤</div><div class="simple-record-main">
+        const age = worstRequestAgeInfo(ao);
+        return `<div class="simple-record${age ? " " + age.cls : ""}"><div class="simple-record-icon">👤</div><div class="simple-record-main">
           <a href="customer.html?id=${c.id}"><b>${esc2(c.name)}</b></a><span>📞 ${esc2(c.phone || "—")}</span>
-          <small>🔧 ${ds} أجهزة • 🛠️ ${rs} أوامر${ao ? ` • 🔴 ${ao} فعال` : ""}${hw ? " • 🏭 جهاز في الورشة" : ""}</small>
-          <small>${lastDate ? `📅 آخر تعامل: ${lastDate.toLocaleDateString("ar-EG",{day:"2-digit",month:"2-digit",year:"2-digit"})}` : "📅 بدون تعامل سابق"}${remain > 0 ? ` • 💰 متبقي ${remain.toFixed(2)} ج` : ""}</small>
+          <small>🔧 ${ds} أجهزة • 🛠️ ${rs} أوامر${ao.length ? ` • 🔴 ${ao.length} فعال` : ""}${hw ? " • 🏭 جهاز في الورشة" : ""}</small>
+          <small>${lastDate ? `📅 آخر تعامل: ${lastDate.toLocaleDateString("ar-EG",{day:"2-digit",month:"2-digit",year:"2-digit"})}` : "📅 بدون تعامل سابق"}${remain > 0 ? ` • 💰 متبقي ${remain.toFixed(2)} ج` : ""}${age ? ` • <span class="age-badge ${age.cls}" title="⏱️ أقدم أمر مفتوح: ${esc2(age.range)}">${age.dot} ${esc2(age.label)}</span>` : ""}</small>
         </div><div class="simple-record-actions"><a class="secondary small-btn" href="customer.html?id=${c.id}">فتح</a><button class="danger-btn small-btn" onclick="deleteCustomerRecord('${c.id}')">حذف</button></div></div>`;
       }).join("") : `<div class="item">لا توجد نتائج.</div>`}`;
   });
@@ -439,7 +440,7 @@
       <option value="type" ${sortKey === "type" ? "selected" : ""}>النوع أبجديًا</option>
     </select>`;
     el.innerHTML = `<div class="simple-list-head"><b>${title}</b><div class="simple-list-head-actions">${sortSelectHtml}<button type="button" class="secondary small-btn" onclick="hideAllDevices()">رجوع للملخص</button></div></div>
-      ${filtered.length ? filtered.map(d => `<div class="simple-record"><div class="simple-record-icon">🔧</div><div class="simple-record-main"><a href="device.html?id=${d.id}"><b>${esc2(d.type)} — ${esc2(d.brand)}</b></a><span>${esc2(d.category||"—")} • ${esc2(d.model||"بدون موديل")}</span><small>👤 ${esc2(customerName(d.customerId))}${activeOrdersForDevice(d.id).length ? ` • 🔴 ${activeOrdersForDevice(d.id).length} أمر فعال` : ""}${hasWorkshopDevice(d.id) ? " • 🏭 في الورشة" : ""}</small></div><div class="simple-record-actions"><a class="secondary small-btn" href="device.html?id=${d.id}">فتح</a><button class="danger-btn small-btn" onclick="deleteDeviceRecord('${d.id}')">حذف</button></div></div>`).join("") : `<div class="item">لا توجد نتائج.</div>`}`;
+      ${filtered.length ? filtered.map(d => { const ao = activeOrdersForDevice(d.id); const age = worstRequestAgeInfo(ao); return `<div class="simple-record${age ? " " + age.cls : ""}"><div class="simple-record-icon">🔧</div><div class="simple-record-main"><a href="device.html?id=${d.id}"><b>${esc2(d.type)} — ${esc2(d.brand)}</b></a><span>${esc2(d.category||"—")} • ${esc2(d.model||"بدون موديل")}</span><small>👤 ${esc2(customerName(d.customerId))}${ao.length ? ` • 🔴 ${ao.length} أمر فعال` : ""}${hasWorkshopDevice(d.id) ? " • 🏭 في الورشة" : ""}${age ? ` • <span class="age-badge ${age.cls}" title="⏱️ أقدم أمر مفتوح: ${esc2(age.range)}">${age.dot} ${esc2(age.label)}</span>` : ""}</small></div><div class="simple-record-actions"><a class="secondary small-btn" href="device.html?id=${d.id}">فتح</a><button class="danger-btn small-btn" onclick="deleteDeviceRecord('${d.id}')">حذف</button></div></div>`; }).join("") : `<div class="item">لا توجد نتائج.</div>`}`;
   });
 
   /* ---------- المخزن ---------- */

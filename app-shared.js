@@ -145,6 +145,17 @@ function requestIsStale(r){
   let threshold=Number.isFinite(+settings().overdueAlertDays)&&+settings().overdueAlertDays>0?+settings().overdueAlertDays:7;
   return days>=threshold
 }
+/* V11.56: نفس ترميز عمر الأمر، لكن معمَّم على أي قايمة أوامر (عميل/جهاز/خط
+   سير) بحيث ياخد لون أسوأ (أقدم) أمر مفتوح فيها — نفس فكرة "افتح عليه
+   أمر ومحتاج تتابعه" بس على مستوى العميل/الجهاز مش الأمر بس. */
+function worstRequestAgeInfo(list){
+  let best=null;
+  (list||[]).forEach(r=>{
+    let info=requestAgeInfo(r);
+    if(info&&(!best||info.days>best.days))best=info;
+  });
+  return best;
+}
 function requestStartedDate(r){return requestTimingDate(r,"startedAt",true)}
 function requestCompletedDate(r){return requestTimingDate(r,"completedAt",true)}
 function requestWorkshopStartedDate(r){
