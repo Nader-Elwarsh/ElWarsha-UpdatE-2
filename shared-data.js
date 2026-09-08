@@ -150,6 +150,10 @@
     s.routeOrder = Array.isArray(s.routeOrder) ? s.routeOrder : [];
     s.defaultWallet = typeof s.defaultWallet === "string" ? s.defaultWallet : "";
     s.returnWindowDays = Number.isFinite(+s.returnWindowDays) && +s.returnWindowDays > 0 ? +s.returnWindowDays : 7;
+    // V11.54: عدد الأيام اللي لو أمر شغل مفتوح (جديد/جاري التنفيذ) قعد من غير
+    // ما يتقفل أكتر منه، يتلوّن أحمر في القايمة ويدخل عداد "🔥 يحتاج انتباه"
+    // في الداشبورد. المستخدم بيتحكم فيه بنفسه من ⚙️ الإعدادات.
+    s.overdueAlertDays = Number.isFinite(+s.overdueAlertDays) && +s.overdueAlertDays > 0 ? +s.overdueAlertDays : 7;
     put(K.s, s);
     return s;
   }

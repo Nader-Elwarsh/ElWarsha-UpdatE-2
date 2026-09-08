@@ -686,6 +686,7 @@
     if (b === "completed") return orderIsCompleted(r);
     if (b === "parts") return orderIsParts(r);
     if (b === "overdue") return orderIsOverdue(r);
+    if (b === "stale") return typeof requestIsStale === "function" && requestIsStale(r);
     if (b === "open" || b === "unfinished" || b === "needed") return r.status !== "مكتمل" && r.status !== "ملغي" && !r.closed;
     if (b === "new") return r.status === "جديد";
     if (b === "active") return r.status === "جاري التنفيذ";
@@ -876,6 +877,7 @@
       focus === "completed" ? "الأوامر المكتملة" :
       focus === "parts" ? "انتظار قطع الغيار" :
       focus === "overdue" ? "الأوامر المتأخرة" :
+      focus === "stale" ? "الأوامر القديمة (محتاجة تنفيذ)" :
       focus === "unfinished" ? "الأوامر غير المكتملة" :
       focus === "needed" ? "المطلوب الآن" :
       focus === "new" ? "الأوامر الجديدة" :
@@ -895,7 +897,7 @@
         <div class="request-filter-grid">
           ${selectHtml("requestOpsFocus",[
             {v:"",t:"كل الأوامر"},{v:"needed",t:"🎯 المطلوب الآن"},{v:"completed",t:"✅ مكتمل"},
-            {v:"overdue",t:"⚠️ متأخر"},{v:"parts",t:"📦 انتظار قطع"},
+            {v:"overdue",t:"⚠️ متأخر"},{v:"stale",t:"🔴 قديم (لسه واقف)"},{v:"parts",t:"📦 انتظار قطع"},
             {v:"today",t:"📅 اليوم"},{v:"unpaid",t:"🧾 غير محصل"}
           ],focus,"التركيز")}
           ${selectHtml("requestOpsStatus",[
@@ -910,20 +912,22 @@
           ],sort,"الترتيب")}
         </div>
       </div>
+      ${requestAgeLegendHtml()}
       ${filtered.length ? filtered.map(r => {
         const loc = locationForOrder(r);
         const status = r.closed ? "مغلق" : (r.status || "—");
-        const age = !orderIsCompleted(r) && r.status!=="ملغي" ? formatDuration(requestAgeMs(r)) : "";
+        const ageInfo = requestAgeInfo(r);
+        const age = ageInfo ? ageInfo.label : "";
         const totalMs=requestTotalCompletionMs(r);
         const workshopMs=requestWorkshopExecutionMs(r);
-        return `<div class="simple-record">
+        return `<div class="simple-record${ageInfo ? " " + ageInfo.cls : ""}">
           <div class="simple-record-icon">${r.closed ? "🔒" : "🛠️"}</div>
           <div class="simple-record-main">
             <a href="request.html?id=${r.id}"><b>${esc2(r.no || "أمر شغل")}</b></a>
             <span>${esc2(customerName(r.customerId))} • ${esc2(deviceName(r.deviceId))}</span>
             <small>📍 ${esc2(loc.center)}${loc.village ? " • " + esc2(loc.village) : ""} • ${r.visit ? new Date(r.visit).toLocaleString("ar-EG",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "بدون موعد"}${r.tag ? " • 🏷️ " + esc2(r.tag) : ""}</small>
             <div class="request-timing">
-              ${age ? `<span class="request-age">⏳ عمر الأمر: ${esc2(age)}</span>` : ""}
+              ${ageInfo ? `<span class="request-age age-badge ${ageInfo.cls}" title="⏱️ عمر الأمر: ${esc2(ageInfo.range)}">${ageInfo.dot} عمر الأمر: ${esc2(age)}</span>` : ""}
               ${totalMs!==null ? `<span>⏱️ الإكمال: ${esc2(formatDuration(totalMs))}</span>` : ""}
               ${r.executionPlace==="الورشة" && workshopMs!==null ? `<span>🏭 تنفيذ الورشة: ${esc2(formatDuration(workshopMs))}</span>` : ""}
             </div>

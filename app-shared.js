@@ -103,29 +103,47 @@ function requestCreatedDate(r){
    بصريًا مين أحدث ومين قاعد بقاله وقت أطول محتاج ينفّذ الأول.
    الأولوية اليدوية لسه مش موجودة (متوافق مع WORK_ORDER_LIFECYCLE_APPROVED.md) —
    ده مجرد لون إرشادي بيتغير أوتوماتيك حسب الوقت، مش حقل بيتعدّل يدويًا. */
+/* V11.54: ترميز لوني حسب عمر أمر الشغل (منذ تاريخ التسجيل)، عشان لو الأوامر
+   المفتوحة (جديد / جاري التنفيذ) كتير مع بعض في القايمة يبقى سهل تفرّق
+   بصريًا مين أحدث ومين قاعد بقاله وقت أطول محتاج ينفّذ الأول.
+   الأولوية اليدوية لسه مش موجودة (متوافق مع WORK_ORDER_LIFECYCLE_APPROVED.md) —
+   ده مجرد لون إرشادي بيتغير أوتوماتيك حسب الوقت، مش حقل بيتعدّل يدويًا.
+   3 ألوان بس (مش 6) بناءً على طلب المستخدم، ومرتبطة بنفس رقم "تنبيه
+   الأوامر القديمة" اللي المستخدم بيتحكم فيه من الإعدادات (s.overdueAlertDays):
+   لو الأمر وصل لعدد الأيام ده أو أكتر يبقى أحمر (ونفسه اللي بيدخل عداد
+   التنبيه في الداشبورد)، ونصّه تقريبًا يبقى أصفر، وأقل من كده أخضر. */
 function requestAgeDays(r){
-  let d=requestCreatedDate(r);
-  if(!d)return null;
-  let ms=Date.now()-d.getTime();
-  return Math.floor(Math.max(0,ms)/86400000)
+  let ms=requestAgeMs(r);
+  return ms===null?null:Math.floor(ms/86400000)
 }
-var REQUEST_AGE_BUCKETS=[
-  {max:1,cls:"age-b0",dot:"🟢",range:"يوم أو أقل"},
-  {max:3,cls:"age-b1",dot:"🟡",range:"يومين-3 أيام"},
-  {max:5,cls:"age-b2",dot:"🟠",range:"4-5 أيام"},
-  {max:7,cls:"age-b3",dot:"🟠",range:"6-7 أيام"},
-  {max:9,cls:"age-b4",dot:"🔴",range:"8-9 أيام"},
-  {max:Infinity,cls:"age-b5",dot:"🔴",range:"10 أيام فأكتر"}
-];
 function requestAgeInfo(r){
   if(!r||r.status==="مكتمل"||r.status==="ملغي")return null;
   let days=requestAgeDays(r);
   if(days===null)return null;
-  let b=REQUEST_AGE_BUCKETS.find(x=>days<=x.max)||REQUEST_AGE_BUCKETS[REQUEST_AGE_BUCKETS.length-1];
-  return{days,cls:b.cls,dot:b.dot,range:b.range,label:days===0?"جديد اليوم":(days===1?"من يوم":`من ${days} يوم`)}
+  let threshold=Number.isFinite(+settings().overdueAlertDays)&&+settings().overdueAlertDays>0?+settings().overdueAlertDays:7;
+  let mid=Math.max(1,Math.floor(threshold/2));
+  let cls,dot,range;
+  if(days<mid){cls="age-b0";dot="🟢";range=`أقل من ${mid} يوم`}
+  else if(days<threshold){cls="age-b1";dot="🟡";range=`من ${mid} لحد ${threshold-1} يوم`}
+  else{cls="age-b2";dot="🔴";range=`${threshold} يوم فأكتر`}
+  return{days,cls,dot,range,label:days===0?"جديد اليوم":(days===1?"من يوم":`من ${days} يوم`)}
 }
 function requestAgeLegendHtml(){
-  return `<div class="age-legend">${REQUEST_AGE_BUCKETS.map(b=>`<span class="age-legend-item ${b.cls}">${b.dot} ${esc(b.range)}</span>`).join("")}</div>`
+  let threshold=Number.isFinite(+settings().overdueAlertDays)&&+settings().overdueAlertDays>0?+settings().overdueAlertDays:7;
+  let mid=Math.max(1,Math.floor(threshold/2));
+  let items=[
+    {cls:"age-b0",dot:"🟢",range:`أقل من ${mid} يوم`},
+    {cls:"age-b1",dot:"🟡",range:`من ${mid} لحد ${threshold-1} يوم`},
+    {cls:"age-b2",dot:"🔴",range:`${threshold} يوم فأكتر (بيدخل تنبيه الداشبورد)`}
+  ];
+  return `<div class="age-legend">${items.map(b=>`<span class="age-legend-item ${b.cls}">${b.dot} ${esc(b.range)}</span>`).join("")}</div>`
+}
+function requestIsStale(r){
+  if(!r||r.status==="مكتمل"||r.status==="ملغي"||r.closed)return false;
+  let days=requestAgeDays(r);
+  if(days===null)return false;
+  let threshold=Number.isFinite(+settings().overdueAlertDays)&&+settings().overdueAlertDays>0?+settings().overdueAlertDays:7;
+  return days>=threshold
 }
 function requestStartedDate(r){return requestTimingDate(r,"startedAt",true)}
 function requestCompletedDate(r){return requestTimingDate(r,"completedAt",true)}
