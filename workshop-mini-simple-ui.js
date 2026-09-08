@@ -526,7 +526,7 @@
       ).join("");
 
       const cards = Object.entries(cats).slice(0, 6).map(([k,n]) =>
-        `<div class="simple-stat" onclick="showPartsCategory('${k.replace(/'/g,"\\'")}')" role="button" tabindex="0"><span>${categoryIcon(k)}</span><b>${esc2(k)}</b><strong>${n}</strong><small>قطعة</small></div>`
+        `<div class="simple-stat ${categoryColorClass(k)}" onclick="showPartsCategory('${k.replace(/'/g,"\\'")}')" role="button" tabindex="0"><span>${categoryIcon(k)}</span><b>${esc2(k)}</b><strong>${n}</strong><small>قطعة</small></div>`
       ).join("");
 
       el.innerHTML = `
@@ -593,7 +593,7 @@
           const qty = +p.qty || 0, use = +p.use || 0, total = qty * use;
           const isLow = qty <= (+p.min || 0);
           return `<tr class="report-row-clickable" onclick="location.href='part.html?id=${p.id}'">
-            <td><a href="part.html?id=${p.id}">${esc2(p.name)}</a><br><small style="color:#8a97a3">${esc2(p.category || "—")} • ${esc2(p.code || "بدون كود")}</small></td>
+            <td><a href="part.html?id=${p.id}">${esc2(p.name)}</a><br><small style="color:#8a97a3"><span class="cat-dot ${categoryColorClass(p.category)}"></span>${esc2(p.category || "—")} • ${esc2(p.code || "بدون كود")}</small></td>
             <td>${qty}</td>
             <td>${use.toFixed(2)} ج</td>
             <td>${total.toFixed(2)} ج</td>
@@ -609,10 +609,10 @@
         const pct = use > 0 ? ((use - buy) / use * 100) : 0;
         return `
         <div class="simple-record">
-          <div class="simple-record-icon">${categoryIcon(p.category)}</div>
+          <div class="simple-record-icon ${categoryColorClass(p.category)}">${categoryIcon(p.category)}</div>
           <div class="simple-record-main">
             <a href="part.html?id=${p.id}"><b>${esc2(p.name)}</b></a>
-            <span>${esc2(p.category || "—")} • ${esc2(p.code || "بدون كود")}</span>
+            <span><span class="badge cat-badge ${categoryColorClass(p.category)}">${esc2(p.category || "—")}</span> • ${esc2(p.code || "بدون كود")}</span>
             <small>📍 ${esc2(p.location || "—")} • شراء ${buy.toFixed(2)} ج • استخدام ${use.toFixed(2)} ج • 📈 ${pct.toFixed(1)}%${bucket === "value" ? ` • قيمة (${valueMode === "use" ? "استخدام" : "تكلفة"}): ${((+p.qty||0)*(+p[valueMode]||0)).toFixed(2)} ج` : ""}</small>
             <small>💰 إجمالي الصنف: ${itemTotal.toFixed(2)} ج • 🔁 استُخدم ${partUsageCount(p.id)} مرة</small>
           </div>

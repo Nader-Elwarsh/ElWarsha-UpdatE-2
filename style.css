@@ -147,6 +147,26 @@ button,input,select,textarea{font-size:inherit}
 [data-theme="dark"] .age-badge.age-b1{background:#e0b02940;color:#f3d488}
 [data-theme="dark"] .age-badge.age-b2{background:#c0392b40;color:#ff9d94}
 @media(max-width:650px){.age-legend{font-size:10px;gap:5px}.age-legend-item{padding:2px 7px}}
+/* V11.57: لون ثابت لكل تصنيف قطع غيار في المخزن (غسالات/تلاجات/تكييفات...) */
+.cat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:4px;vertical-align:middle}
+.cat-badge{font-weight:bold;padding:2px 8px;border-radius:20px;display:inline-block}
+.simple-stat.cat-c0,.simple-stat.cat-c1,.simple-stat.cat-c2,.simple-stat.cat-c3,.simple-stat.cat-c4,.simple-stat.cat-c5,.simple-stat.cat-c6,.simple-stat.cat-c7{border-top-width:3px;border-top-style:solid}
+.simple-record-icon.cat-c0{background:#3a7bd530;color:#3a7bd5}.simple-stat.cat-c0{border-top-color:#3a7bd5}.cat-badge.cat-c0{background:#3a7bd526;color:#2a5298}.cat-dot.cat-c0{background:#3a7bd5}
+.simple-record-icon.cat-c1{background:#2e8b5730;color:#2e8b57}.simple-stat.cat-c1{border-top-color:#2e8b57}.cat-badge.cat-c1{background:#2e8b5726;color:#1e6b3a}.cat-dot.cat-c1{background:#2e8b57}
+.simple-record-icon.cat-c2{background:#e07b3930;color:#e07b39}.simple-stat.cat-c2{border-top-color:#e07b39}.cat-badge.cat-c2{background:#e07b3926;color:#a1560f}.cat-dot.cat-c2{background:#e07b39}
+.simple-record-icon.cat-c3{background:#8e44ad30;color:#8e44ad}.simple-stat.cat-c3{border-top-color:#8e44ad}.cat-badge.cat-c3{background:#8e44ad26;color:#6c3483}.cat-dot.cat-c3{background:#8e44ad}
+.simple-record-icon.cat-c4{background:#16a08530;color:#16a085}.simple-stat.cat-c4{border-top-color:#16a085}.cat-badge.cat-c4{background:#16a08526;color:#0e6655}.cat-dot.cat-c4{background:#16a085}
+.simple-record-icon.cat-c5{background:#c2185b30;color:#c2185b}.simple-stat.cat-c5{border-top-color:#c2185b}.cat-badge.cat-c5{background:#c2185b26;color:#8f1246}.cat-dot.cat-c5{background:#c2185b}
+.simple-record-icon.cat-c6{background:#a67c5230;color:#a67c52}.simple-stat.cat-c6{border-top-color:#a67c52}.cat-badge.cat-c6{background:#a67c5226;color:#7a5b3c}.cat-dot.cat-c6{background:#a67c52}
+.simple-record-icon.cat-c7{background:#34495e30;color:#34495e}.simple-stat.cat-c7{border-top-color:#34495e}.cat-badge.cat-c7{background:#34495e26;color:#212f3c}.cat-dot.cat-c7{background:#34495e}
+[data-theme="dark"] .cat-badge.cat-c0{background:#3a7bd545;color:#9dc3ff}[data-theme="dark"] .simple-record-icon.cat-c0{color:#9dc3ff}
+[data-theme="dark"] .cat-badge.cat-c1{background:#2e8b5745;color:#8fe0b0}[data-theme="dark"] .simple-record-icon.cat-c1{color:#8fe0b0}
+[data-theme="dark"] .cat-badge.cat-c2{background:#e07b3945;color:#ffbf8f}[data-theme="dark"] .simple-record-icon.cat-c2{color:#ffbf8f}
+[data-theme="dark"] .cat-badge.cat-c3{background:#8e44ad45;color:#dcaee8}[data-theme="dark"] .simple-record-icon.cat-c3{color:#dcaee8}
+[data-theme="dark"] .cat-badge.cat-c4{background:#16a08545;color:#8fe9d6}[data-theme="dark"] .simple-record-icon.cat-c4{color:#8fe9d6}
+[data-theme="dark"] .cat-badge.cat-c5{background:#c2185b45;color:#ff9dc2}[data-theme="dark"] .simple-record-icon.cat-c5{color:#ff9dc2}
+[data-theme="dark"] .cat-badge.cat-c6{background:#a67c5245;color:#e0c19d}[data-theme="dark"] .simple-record-icon.cat-c6{color:#e0c19d}
+[data-theme="dark"] .cat-badge.cat-c7{background:#34495e45;color:#a9c1d6}[data-theme="dark"] .simple-record-icon.cat-c7{color:#a9c1d6}
 /* V11.2.1: actions occupy a dedicated left column; never cover record data */
 .record-card{display:grid!important;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:start;direction:ltr;min-height:104px;overflow:hidden}
 .record-card>.record-main{direction:rtl;min-width:0}

@@ -156,6 +156,19 @@ function worstRequestAgeInfo(list){
   });
   return best;
 }
+/* V11.57: لون ثابت لكل تصنيف قطع غيار (غسالات/تلاجات/تكييفات...) عشان
+   يبقى سهل تفرّق بينهم بصريًا في المخزن، بنفس فكرة تلوين عمر الأمر بس
+   هنا اللون ثابت حسب التصنيف نفسه مش حسب الوقت. بيتحسب من هاش بسيط
+   لاسم التصنيف، فأي تصنيف (حتى لو المستخدم ضاف واحد جديد من الإعدادات)
+   ياخد لون ثابت تلقائي من غير أي إعداد إضافي.  */
+var PART_CATEGORY_PALETTE=["cat-c0","cat-c1","cat-c2","cat-c3","cat-c4","cat-c5","cat-c6","cat-c7"];
+function categoryColorClass(cat){
+  let s=String(cat||"").trim();
+  if(!s)return "";
+  let h=0;
+  for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0}
+  return PART_CATEGORY_PALETTE[h%PART_CATEGORY_PALETTE.length];
+}
 function requestStartedDate(r){return requestTimingDate(r,"startedAt",true)}
 function requestCompletedDate(r){return requestTimingDate(r,"completedAt",true)}
 function requestWorkshopStartedDate(r){
