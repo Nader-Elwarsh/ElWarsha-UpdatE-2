@@ -131,6 +131,30 @@ button,input,select,textarea{font-size:inherit}
 /* ترتيب الإعدادات بالسحب والإفلات */
 .drag-hint{font-size:12px;color:var(--text-muted);background:var(--bg-sunken);border-radius:8px;padding:7px 9px;margin:8px 0}.drag-item{position:relative;transition:transform .12s,background .12s,box-shadow .12s}.drag-handle{display:inline-flex;align-items:center;justify-content:center;width:28px;min-width:28px;height:28px;border-radius:7px;background:var(--bg-sunken);color:#526170;cursor:grab;font-size:18px;font-weight:bold;touch-action:none;user-select:none}.drag-handle:active{cursor:grabbing}.drag-item.dragging{opacity:.55;box-shadow:0 0 0 2px #17324d33 inset}.drag-item.drag-over{background:var(--bg-sunken);border-radius:9px;box-shadow:0 0 0 2px #17324d55 inset}.setting-name{flex:1;min-width:0}.type-options{margin:3px 0 8px;padding-right:38px}.sortable-list{display:grid;gap:2px}.village-row{width:100%;}.village-row .village-name{flex:1;min-width:80px}.village-row .order-number,.setting-row .order-number{width:48px;min-width:48px}.setting-row .compact-actions{justify-content:flex-start}@media(max-width:650px){.drag-handle{width:32px;min-width:32px;height:32px}.drag-hint{font-size:11px}.setting-row,.village-row{padding:7px 0}.setting-name{font-size:13px}.type-options{padding-right:40px}}
 
+/* V11.54: ترميز لوني حسب عمر أمر الشغل (شريط علوي على الكارت + شارة صغيرة) */
+.record-card{border-top:4px solid transparent}
+.record-card.age-b0{border-top-color:#3ba35c}
+.record-card.age-b1{border-top-color:#a3c93a}
+.record-card.age-b2{border-top-color:#e0b029}
+.record-card.age-b3{border-top-color:#e8842e}
+.record-card.age-b4{border-top-color:#e0522e}
+.record-card.age-b5{border-top-color:#c0392b}
+.age-badge{font-weight:bold}
+.age-badge.age-b0{background:#3ba35c26;color:#1e6b3a}
+.age-badge.age-b1{background:#a3c93a26;color:#5c7519}
+.age-badge.age-b2{background:#e0b02926;color:#8a6116}
+.age-badge.age-b3{background:#e8842e26;color:#a1560f}
+.age-badge.age-b4{background:#e0522e26;color:#a3341a}
+.age-badge.age-b5{background:#c0392b26;color:#8f1d2c}
+.age-legend{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px}
+.age-legend-item{border-radius:20px;padding:3px 9px;background:var(--bg-sunken);color:var(--text-muted)}
+[data-theme="dark"] .age-badge.age-b0{background:#3ba35c40;color:#7be3a0}
+[data-theme="dark"] .age-badge.age-b1{background:#a3c93a40;color:#d3ec8e}
+[data-theme="dark"] .age-badge.age-b2{background:#e0b02940;color:#f3d488}
+[data-theme="dark"] .age-badge.age-b3{background:#e8842e40;color:#f7b579}
+[data-theme="dark"] .age-badge.age-b4{background:#e0522e40;color:#ffab8f}
+[data-theme="dark"] .age-badge.age-b5{background:#c0392b40;color:#ff9d94}
+@media(max-width:650px){.age-legend{font-size:10px;gap:5px}.age-legend-item{padding:2px 7px}}
 /* V11.2.1: actions occupy a dedicated left column; never cover record data */
 .record-card{display:grid!important;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:start;direction:ltr;min-height:104px;overflow:hidden}
 .record-card>.record-main{direction:rtl;min-width:0}

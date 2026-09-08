@@ -98,6 +98,35 @@ function requestCreatedDate(r){
   }
   return null;
 }
+/* V11.54: ترميز لوني حسب عمر أمر الشغل (منذ تاريخ التسجيل)، عشان لو الأوامر
+   المفتوحة (جديد / جاري التنفيذ) كتير مع بعض في القايمة يبقى سهل تفرّق
+   بصريًا مين أحدث ومين قاعد بقاله وقت أطول محتاج ينفّذ الأول.
+   الأولوية اليدوية لسه مش موجودة (متوافق مع WORK_ORDER_LIFECYCLE_APPROVED.md) —
+   ده مجرد لون إرشادي بيتغير أوتوماتيك حسب الوقت، مش حقل بيتعدّل يدويًا. */
+function requestAgeDays(r){
+  let d=requestCreatedDate(r);
+  if(!d)return null;
+  let ms=Date.now()-d.getTime();
+  return Math.floor(Math.max(0,ms)/86400000)
+}
+var REQUEST_AGE_BUCKETS=[
+  {max:1,cls:"age-b0",dot:"🟢",range:"يوم أو أقل"},
+  {max:3,cls:"age-b1",dot:"🟡",range:"يومين-3 أيام"},
+  {max:5,cls:"age-b2",dot:"🟠",range:"4-5 أيام"},
+  {max:7,cls:"age-b3",dot:"🟠",range:"6-7 أيام"},
+  {max:9,cls:"age-b4",dot:"🔴",range:"8-9 أيام"},
+  {max:Infinity,cls:"age-b5",dot:"🔴",range:"10 أيام فأكتر"}
+];
+function requestAgeInfo(r){
+  if(!r||r.status==="مكتمل"||r.status==="ملغي")return null;
+  let days=requestAgeDays(r);
+  if(days===null)return null;
+  let b=REQUEST_AGE_BUCKETS.find(x=>days<=x.max)||REQUEST_AGE_BUCKETS[REQUEST_AGE_BUCKETS.length-1];
+  return{days,cls:b.cls,dot:b.dot,range:b.range,label:days===0?"جديد اليوم":(days===1?"من يوم":`من ${days} يوم`)}
+}
+function requestAgeLegendHtml(){
+  return `<div class="age-legend">${REQUEST_AGE_BUCKETS.map(b=>`<span class="age-legend-item ${b.cls}">${b.dot} ${esc(b.range)}</span>`).join("")}</div>`
+}
 function requestStartedDate(r){return requestTimingDate(r,"startedAt",true)}
 function requestCompletedDate(r){return requestTimingDate(r,"completedAt",true)}
 function requestWorkshopStartedDate(r){
