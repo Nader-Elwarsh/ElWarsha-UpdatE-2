@@ -102,8 +102,10 @@ document.addEventListener("DOMContentLoaded",async()=>{
 function setupQuickLocation(prefix){
   let center=document.getElementById(prefix+'Center'), village=document.getElementById(prefix+'Village');
   if(!center||!village)return;
-  fillCenters(center); center.onchange=()=>fillVillages(village,center.value); fillVillages(village,center.value);
+  fillListSearch(prefix+'Center','center'); fillListSearch(prefix+'Village','village','',prefix+'Center');
+  center.onchange=()=>fillListSearch(prefix+'Village','village','',prefix+'Center');
 }
+
 function saveQuickCustomer(){
   let name=document.getElementById('qcName')?.value.trim(),phone=document.getElementById('qcPhone')?.value.trim();
   if(!name||!phone)return alert('اكتب اسم العميل والتليفون أولاً.');
@@ -131,9 +133,9 @@ function saveDeviceCustomer(){
 function setupQuickForms(){
   if(document.getElementById('quickCustomerBox'))setupQuickLocation('qc');
   if(document.getElementById('quickDeviceCustomerBox'))setupQuickLocation('dc');
-  if(document.getElementById('qdType')){fillTypes(qdType);fillBrands(qdBrand);qdType.onchange=()=>fillCats(qdCategory,qdType.value);fillCats(qdCategory,qdType.value)}
+  if(document.getElementById('qdType')){fillListSearch('qdType','type');fillListSearch('qdBrand','brand');qdType.onchange=()=>fillListSearch('qdCategory','category','','qdType');fillListSearch('qdCategory','category','','qdType')}
   if(document.getElementById('qoCustomerBox'))setupQuickLocation('qo');
-  if(document.getElementById('qoType')){fillTypes(qoType);fillBrands(qoBrand);qoType.onchange=()=>fillCats(qoCategory,qoType.value);fillCats(qoCategory,qoType.value)}
+  if(document.getElementById('qoType')){fillListSearch('qoType','type');fillListSearch('qoBrand','brand');qoType.onchange=()=>fillListSearch('qoCategory','category','','qoType');fillListSearch('qoCategory','category','','qoType')}
 }
 const _oldInitRequests=initRequests;
 initRequests=function(){_oldInitRequests();setupQuickForms()}

@@ -15,6 +15,8 @@
 .part-ac-item:hover,.part-ac-item:active{background:var(--bg-sunken)}
 .part-ac-item span{color:var(--text-muted);font-size:12px;white-space:nowrap}
 .part-ac-empty{padding:10px 12px;color:var(--text-muted);font-size:13px}
+.part-ac-item.ac-add-new{color:var(--accent-text);border-top:1px dashed var(--border)}
+.part-ac-item.ac-add-new b{color:var(--accent-text)}
 .setting-row-disabled{opacity:.6}
 .setting-subhead{font-weight:bold;font-size:13px;color:var(--text-muted);margin:12px 0 4px}
 .route-badge-visited{background:#e7f0ff;color:#1f4fa3}
