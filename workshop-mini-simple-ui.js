@@ -608,7 +608,7 @@
         const itemTotal = qty * use;
         const pct = use > 0 ? ((use - buy) / use * 100) : 0;
         return `
-        <div class="simple-record">
+        <div class="simple-record ${categoryColorClass(p.category)}">
           <div class="simple-record-icon ${categoryColorClass(p.category)}">${categoryIcon(p.category)}</div>
           <div class="simple-record-main">
             <a href="part.html?id=${p.id}"><b>${esc2(p.name)}</b></a>
