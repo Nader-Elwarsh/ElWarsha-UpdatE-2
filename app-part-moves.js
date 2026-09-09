@@ -86,7 +86,7 @@
               <td>${new Date(m.at).toLocaleString("ar-EG")}</td>
               <td>${esc(m.type || "—")}</td>
               <td>${+m.qty || 0}</td>
-              <td>${req ? `<a href="request.html?id=${req.id}">${esc(req.no || req.id)} — ${esc(customerName(req.customerId))}</a>` : "—"}</td>
+              <td>${req ? `<a href="request.html?id=${req.id}">${esc(req.no || req.id)} — ${esc(customerName(req.customerId))}</a>` : (m.note ? esc(m.note) : "—")}</td>
             </tr>`;
           }).join("")}
         </table></div>` : `<div class="report-empty">لا توجد حركات مطابقة لهذا الفلتر.</div>`}

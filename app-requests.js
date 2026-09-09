@@ -9,9 +9,16 @@ function filterOrderPartOptions(q){
   const hidden=document.getElementById("rPart");
   if(hidden){hidden.value="";hidden.removeAttribute("data-qty")}
   q=String(q??document.getElementById("rPartSearch")?.value??"").trim();
-  const list=arr(K.p);
-  const matches=(q?list.filter(p=>(p.name||"").toLowerCase().includes(q.toLowerCase())):list).slice(0,50);
-  box.innerHTML=matches.length?matches.map(p=>`<div class="part-ac-item" onmousedown="selectOrderPart('${p.id}')"><b>${esc(p.name)}</b><span>${(+p.use||0).toFixed(2)} ج — ${+p.qty||0} متاح</span></div>`).join(""):'<div class="part-ac-empty">لا توجد أصناف مطابقة.</div>';
+  const list=arr(K.p).filter(p=>!p.archived);
+  const qLower=q.toLowerCase();
+  const matches=(q?list.filter(p=>(p.name||"").toLowerCase().includes(qLower)||(p.code||"").toLowerCase().includes(qLower)):list).slice(0,50);
+  let html=matches.length?matches.map(p=>`<div class="part-ac-item" data-value="${esc(p.id)}"><b>${esc(p.name)}</b><span>${(+p.use||0).toFixed(2)} ج — ${+p.qty||0} متاح</span></div>`).join(""):'<div class="part-ac-empty">لا توجد أصناف مطابقة.</div>';
+  if(q&&!list.some(p=>(p.name||"").toLowerCase()===qLower)){
+    html+=`<div class="part-ac-item ac-add-new" data-addpart="${esc(q)}"><b>➕ إضافة "${esc(q)}" كقطعة جديدة للمخزن</b></div>`;
+  }
+  box.innerHTML=html;
+  box.querySelectorAll("[data-value]").forEach(item=>{item.onmousedown=()=>selectOrderPart(item.dataset.value)});
+  box.querySelectorAll("[data-addpart]").forEach(item=>{item.onmousedown=()=>{box.classList.add("hidden");openQuickAddPart(item.dataset.addpart,{onCreated:p=>selectOrderPart(p.id)})}});
   box.classList.remove("hidden");
 }
 function selectOrderPart(pid){
@@ -135,9 +142,16 @@ function filterRequestPartOptions(q){
   if(hidden)hidden.value="";
   syncRequestPartQty();
   q=String(q??document.getElementById("rpPartSearch")?.value??"").trim();
-  const list=arr(K.p);
-  const matches=(q?list.filter(p=>(p.name||"").toLowerCase().includes(q.toLowerCase())):list).slice(0,50);
-  box.innerHTML=matches.length?matches.map(p=>`<div class="part-ac-item" onmousedown="selectRequestPart('${p.id}')"><b>${esc(p.name)}</b><span>${(+p.use||0).toFixed(2)} ج — ${+p.qty||0} متاح</span></div>`).join(""):'<div class="part-ac-empty">لا توجد أصناف مطابقة.</div>';
+  const list=arr(K.p).filter(p=>!p.archived);
+  const qLower=q.toLowerCase();
+  const matches=(q?list.filter(p=>(p.name||"").toLowerCase().includes(qLower)||(p.code||"").toLowerCase().includes(qLower)):list).slice(0,50);
+  let html=matches.length?matches.map(p=>`<div class="part-ac-item" data-value="${esc(p.id)}"><b>${esc(p.name)}</b><span>${(+p.use||0).toFixed(2)} ج — ${+p.qty||0} متاح</span></div>`).join(""):'<div class="part-ac-empty">لا توجد أصناف مطابقة.</div>';
+  if(q&&!list.some(p=>(p.name||"").toLowerCase()===qLower)){
+    html+=`<div class="part-ac-item ac-add-new" data-addpart="${esc(q)}"><b>➕ إضافة "${esc(q)}" كقطعة جديدة للمخزن</b></div>`;
+  }
+  box.innerHTML=html;
+  box.querySelectorAll("[data-value]").forEach(item=>{item.onmousedown=()=>selectRequestPart(item.dataset.value)});
+  box.querySelectorAll("[data-addpart]").forEach(item=>{item.onmousedown=()=>{box.classList.add("hidden");openQuickAddPart(item.dataset.addpart,{onCreated:p=>selectRequestPart(p.id)})}});
   box.classList.remove("hidden");
 }
 function selectRequestPart(pid){
