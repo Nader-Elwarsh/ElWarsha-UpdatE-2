@@ -246,13 +246,7 @@ function closeQuickAdd(boxId){let box=document.getElementById(boxId);if(!box)ret
 
 /* قسم المهام والمتابعة اتنقل لملف tasks.js (راجع الملف ده لو محتاج تعدل فيه). */
 /* customerName, deviceName, addresses, addressText: منقولة لملف shared-data.js */
-function fillCenters(el,selected=""){if(!el)return;let s=settings();el.innerHTML='<option value="">اختر المركز</option>'+s.centers.map(x=>`<option ${x===selected?"selected":""}>${esc(x)}</option>`).join("")}
-function fillVillages(el,center,selected=""){if(!el)return;let vs=settings().villages[center]||[];el.innerHTML='<option value="">اختر القرية</option>'+vs.map(x=>`<option ${x===selected?"selected":""}>${esc(x)}</option>`).join("")}
 function fillCustomer(el,selected=""){if(!el)return;el.innerHTML='<option value="">اختر العميل</option>'+arr(K.c).map(x=>`<option value="${x.id}" ${x.id===selected?"selected":""}>${esc(x.name)} - ${esc(x.phone)}</option>`).join("")}
 function fillAddress(el,cid,selected=""){let c=arr(K.c).find(x=>x.id===cid);if(!el){return}el.innerHTML='<option value="">اختر العنوان</option>'+(c?addresses(c).map(a=>`<option value="${a.key}" ${a.key===selected?"selected":""}>${esc(a.label)} — ${esc(addressText(a))}</option>`).join(""):"")}
 function fillList(el,key,selected="",placeholder="اختر"){if(!el)return;let a=settings()[key]||[];let extra=selected&&!a.includes(selected)?[selected]:[];el.innerHTML=`<option value="">${placeholder}</option>`+a.concat(extra).map(x=>`<option value="${esc(x)}" ${x===selected?"selected":""}>${esc(x)}${extra.includes(x)?" (قديم/متوقف)":""}</option>`).join("")}
-function addOrderTagInline(){let el=document.getElementById("rTag");if(!el)return;let v=prompt("اكتب اسم التصنيف الجديد:");if(!v||!v.trim())return;v=v.trim();let s=settings();s.orderTags=s.orderTags||[];if(!s.orderTags.includes(v))s.orderTags.push(v);put(K.s,s);fillList(el,"orderTags",v,"🏷️ بدون تصنيف")}
-function fillTypes(el,selected=""){let t=settings().types;el.innerHTML='<option value="">اختر النوع</option>'+Object.keys(t).map(x=>`<option ${x===selected?"selected":""}>${esc(x.replace("_"," "))}</option>`).join("")}
-function fillCats(el,type,selected=""){let t=settings().types[type]||[];el.innerHTML='<option value="">اختر التصنيف</option>'+t.map(x=>`<option ${x===selected?"selected":""}>${esc(x)}</option>`).join("")}
-function fillBrands(el,selected=""){el.innerHTML='<option value="">اختر الماركة</option>'+settings().brands.map(x=>`<option ${x===selected?"selected":""}>${esc(x)}</option>`).join("")}
 function dayKeyLocal(v){let d=new Date(v);return Number.isNaN(d.getTime())?"":`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
