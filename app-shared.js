@@ -209,7 +209,13 @@ function requestWorkshopStayMs(r){
 }
 function requestAgeMs(r){
   let s=requestCreatedDate(r);if(!s)return null;
-  let e=requestCompletedDate(r);
+  // مهم: تستخدم completedAt كنقطة تجميد بس لو الأمر "مكتمل" فعليًا دلوقتي.
+  // لو الأمر اتعمله مرتجع/إعادة فتح (مكتمل → جاري التنفيذ)، completedAt القديم
+  // بيفضل محفوظ عمدًا (للتاريخ/التقارير) لكن ده مش المفروض يجمّد "عمر" الأمر
+  // المفتوح تاني — غير كده أي أمر رجع "جاري التنفيذ" بعد ما كان مكتمل من
+  // زمان هيفضل شكله "جديد" في شارة اللون وترتيب الأقدم وتنبيه الأوامر
+  // القديمة، بالظبط عكس الهدف من الميزة دي.
+  let e=r?.status==="مكتمل"?requestCompletedDate(r):null;
   return durationMs(s,e||new Date());
 }
 

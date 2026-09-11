@@ -1,5 +1,6 @@
-const CACHE_NAME = "workshop-v11-61";
+const CACHE_NAME = "workshop-v11-63";
 importScripts("./notif-shared.js");
+importScripts("./share-store.js");
 const CORE_FILES = [
   "./",
   "./index.html",
@@ -52,6 +53,9 @@ const CORE_FILES = [
   "./app-restock.js",
   "./app-quick-add.js",
   "./app-notifications-bootstrap.js",
+  "./share-target.html",
+  "./share-target.js",
+  "./share-store.js",
   "./workshop-mini-simple-ui.js",
   "./workshop-mini-enhancements.js",
   "./reports.js",
@@ -81,8 +85,35 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   const request = event.request;
-  if (request.method !== "GET") return;
   const url = new URL(request.url);
+
+  // نقطة استقبال "مشاركة" من تطبيقات تانية (زي تطبيق تسجيل المكالمات):
+  // نظام المشاركة في أندرويد بيبعت POST فعلي هنا لما المستخدم يختار
+  // "الورشة الفنية" من قايمة المشاركة بعد تسجيل مكالمة. الصفحة (share-
+  // target.html) مايقدرش تقرأ body الـ POST مباشرة، فبنستقبله هنا،
+  // نحفظه في IndexedDB (share-store.js)، وبعدين نعمل redirect لنفس
+  // الصفحة كـ navigation عادي (GET) عشان تقرأ اللي اتحفظ وتعرضه —
+  // ده الشكل القياسي لـ Web Share Target مع POST/multipart.
+  if (request.method === "POST" && url.pathname.endsWith("/share-target.html")) {
+    event.respondWith((async () => {
+      try {
+        const form = await request.formData();
+        const files = form.getAll("recording").filter(f => f && f.size);
+        await sharePut({
+          title: form.get("title") || "",
+          text: form.get("text") || "",
+          url: form.get("url") || "",
+          file: files[0] || null,
+          fileName: files[0]?.name || "",
+          at: Date.now()
+        });
+      } catch (e) { console.error("[SW] فشل استقبال المشاركة", e); }
+      return Response.redirect("./share-target.html?shared=1", 303);
+    })());
+    return;
+  }
+
+  if (request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
 
   // HTML pages: cache by pathname, not by query string.
